@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교안검수 스킬의 탄생과 성장 — Claude Code와 함께한 여정</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #faf8f5;
+      color: #2c2c2c;
+      line-height: 1.9;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 60px 28px 100px;
+    }
+
+    /* ===== Hero Header ===== */
+    .hero {
+      text-align: center;
+      margin-bottom: 64px;
+      padding: 48px 32px;
+      background: linear-gradient(135deg, #c4956a 0%, #a67c52 50%, #8b6942 100%);
+      border-radius: 24px;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(166, 124, 82, 0.3);
+    }
+
+    .hero h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero .subtitle {
+      font-size: 1.05rem;
+      font-weight: 300;
+      opacity: 0.92;
+      margin-bottom: 16px;
+    }
+
+    .hero .date-range {
+      font-size: 0.88rem;
+      opacity: 0.7;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      padding-top: 16px;
+      margin-top: 8px;
+    }
+
+    /* ===== Table of Contents ===== */
+    .toc {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 56px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .toc h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #a67c52;
+      margin-bottom: 16px;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .toc-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0ebe5;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .toc-list li:last-child { border-bottom: none; }
+
+    .toc-list .ch-num {
+      background: #a67c52;
+      color: #fff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .toc-list a {
+      color: #2c2c2c;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+
+    .toc-list a:hover { color: #a67c52; }
+
+    .toc-list .toc-date {
+      color: #aaa;
+      font-size: 0.82rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* ===== Chapter ===== */
+    .chapter {
+      margin-bottom: 64px;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 36px;
+      padding: 24px 28px;
+      background: linear-gradient(135deg, #a67c52 0%, #8b6942 100%);
+      border-radius: 16px;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(166, 124, 82, 0.25);
+    }
+
+    .chapter-num {
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.35);
+    }
+
+    .chapter-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .chapter-header .ch-date {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      font-weight: 300;
+    }
+
+    /* ===== Messages ===== */
+    .message {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .message.user .avatar {
+      background: linear-gradient(135deg, #d4a574, #c4956a);
+      color: #fff;
+    }
+
+    .message.assistant .avatar {
+      background: linear-gradient(135deg, #6b7b8d, #556270);
+      color: #fff;
+    }
+
+    .bubble {
+      max-width: 82%;
+      padding: 18px 22px;
+      border-radius: 20px;
+      font-size: 1rem;
+      line-height: 1.85;
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, #d4a574, #c4956a);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+      box-shadow: 0 2px 8px rgba(196, 149, 106, 0.25);
+    }
+
+    .message.assistant .bubble {
+      background: #fff;
+      color: #2c2c2c;
+      border-bottom-left-radius: 6px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .bubble p { margin-bottom: 12px; }
+    .bubble p:last-child { margin-bottom: 0; }
+    .bubble strong { font-weight: 600; }
+
+    /* Summary box */
+    .summary-box {
+      background: #f7f3ee;
+      border-left: 4px solid #c4956a;
+      padding: 14px 18px;
+      border-radius: 0 12px 12px 0;
+      margin: 14px 0;
+      font-size: 0.93rem;
+      color: #5a4a3e;
+      line-height: 1.8;
+    }
+
+    .message.user .bubble .summary-box {
+      background: rgba(255,255,255,0.15);
+      border-left-color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.92);
+    }
+
+    /* Result card */
+    .result-card {
+      background: #f9f6f2;
+      border: 1px solid #e8ddd0;
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin: 16px 0;
+    }
+
+    .result-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #a67c52;
+      margin-bottom: 10px;
+    }
+
+    /* Table */
+    .bubble table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 0.92rem;
+    }
+
+    .bubble th, .bubble td {
+      padding: 10px 14px;
+      border: 1px solid #e0d8d0;
+      text-align: left;
+    }
+
+    .bubble th {
+      background: #f7f3ee;
+      font-weight: 600;
+      color: #6b5a4e;
+    }
+
+    .bubble code {
+      background: #f0ebe5;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.88rem;
+      font-family: 'Courier New', monospace;
+      color: #8b6942;
+    }
+
+    .bubble ul, .bubble ol {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+
+    .bubble li { margin-bottom: 6px; }
+
+    .bubble blockquote {
+      border-left: 3px solid #c4956a;
+      padding-left: 14px;
+      margin: 12px 0;
+      color: #7a6a5e;
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    /* Highlight tag */
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      margin: 2px 4px 2px 0;
+    }
+
+    .tag.pass { background: #e8f5e9; color: #2e7d32; }
+    .tag.warn { background: #fff3e0; color: #e65100; }
+    .tag.info { background: #e3f2fd; color: #1565c0; }
+    .tag.new { background: #fce4ec; color: #c62828; }
+
+    /* ===== Narration ===== */
+    .narration {
+      text-align: center;
+      margin: 40px 0;
+      padding: 20px;
+      color: #999;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    /* ===== Divider ===== */
+    .divider {
+      text-align: center;
+      margin: 48px 0;
+      color: #ccc;
+      font-size: 0.82rem;
+      font-weight: 300;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      display: inline-block;
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #ddd, transparent);
+      vertical-align: middle;
+      margin: 0 16px;
+    }
+
+    /* ===== Skill Evolution Timeline ===== */
+    .timeline {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      margin: 48px 0;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .timeline h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #a67c52;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      position: relative;
+      padding-left: 8px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 32px;
+      bottom: -20px;
+      width: 2px;
+      background: #e8ddd0;
+    }
+
+    .timeline-item:last-child::before { display: none; }
+
+    .timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #c4956a;
+      flex-shrink: 0;
+      margin-top: 6px;
+      border: 3px solid #faf8f5;
+      box-shadow: 0 0 0 2px #c4956a;
+      z-index: 1;
+    }
+
+    .timeline-content {
+      flex: 1;
+    }
+
+    .timeline-date {
+      font-size: 0.82rem;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    .timeline-text {
+      font-size: 0.95rem;
+      color: #2c2c2c;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      text-align: center;
+      margin-top: 64px;
+      padding: 32px;
+      color: #aaa;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    .footer .tool-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6b7b8d, #556270);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    /* ===== Music Player ===== */
+    .music-player {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      padding: 10px 18px;
+      border-radius: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      border: 1px solid #e8ddd0;
+      transition: all 0.3s ease;
+    }
+
+    .music-player:hover {
+      box-shadow: 0 6px 28px rgba(0,0,0,0.16);
+    }
+
+    .play-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #c4956a, #a67c52);
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      flex-shrink: 0;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 3px 12px rgba(166, 124, 82, 0.4);
+    }
+
+    .play-btn.playing {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(196, 149, 106, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(196, 149, 106, 0); }
+    }
+
+    .music-label {
+      font-size: 0.8rem;
+      color: #8b6942;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .music-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 18px;
+    }
+
+    .music-bars .bar {
+      width: 3px;
+      background: #c4956a;
+      border-radius: 2px;
+      transition: height 0.15s;
+    }
+
+    .music-bars.active .bar {
+      animation: barDance 0.8s ease-in-out infinite;
+    }
+
+    .music-bars.active .bar:nth-child(1) { animation-delay: 0s; }
+    .music-bars.active .bar:nth-child(2) { animation-delay: 0.15s; }
+    .music-bars.active .bar:nth-child(3) { animation-delay: 0.3s; }
+    .music-bars.active .bar:nth-child(4) { animation-delay: 0.1s; }
+
+    @keyframes barDance {
+      0%, 100% { height: 4px; }
+      50% { height: 16px; }
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px 60px; }
+      .hero { padding: 32px 20px; }
+      .hero h1 { font-size: 1.4rem; }
+      .bubble { max-width: 90%; padding: 14px 16px; }
+      .chapter-header h2 { font-size: 1.15rem; }
+      .music-player { bottom: 12px; right: 12px; padding: 8px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ===== HERO ===== -->
+    <div class="hero">
+      <h1>교안검수 스킬의 탄생과 성장</h1>
+      <div class="subtitle">Claude Code와 함께 만들어가는 업무 체계</div>
+      <div class="date-range">2026년 3월 31일 ~ 4월 2일 &nbsp;|&nbsp; 기업교육1팀 조여경</div>
+    </div>
+
+    <!-- ===== TOC ===== -->
+    <div class="toc">
+      <h2>목차</h2>
+      <ul class="toc-list">
+        <li>
+          <span class="ch-num">1</span>
+          <a href="#ch1">스킬의 탄생 — "교안검수 스킬 갖고있나?"</a>
+          <span class="toc-date">3월 31일</span>
+        </li>
+        <li>
+          <span class="ch-num">2</span>
+          <a href="#ch2">첫 번째 실전 — KB 클라우드 네이티브 과정</a>
+          <span class="toc-date">3월 31일</span>
+        </li>
+        <li>
+          <span class="ch-num">3</span>
+          <a href="#ch3">두 번째 실전 — AI Agent 기획설계구현 과정</a>
+          <span class="toc-date">4월 2일</span>
+        </li>
+        <li>
+          <span class="ch-num">4</span>
+          <a href="#ch4">실전에서 배운 것 — 스킬 개선</a>
+          <span class="toc-date">4월 2일</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CHAPTER 1: 스킬의 탄생 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="chapter" id="ch1">
+      <div class="chapter-header">
+        <div class="chapter-num">1</div>
+        <div>
+          <h2>스킬의 탄생</h2>
+          <div class="ch-date">2026년 3월 31일 오후</div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>너 교안검수 스킬 갖고있나?</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>아니요, 아직 없어요. 하나 만들어볼까요?</p>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>이거 보고 만들어줘.</p>
+          <div class="summary-box">
+            <strong>[첨부: 교안 검수 체크리스트 CSV]</strong><br>
+            23개 항목, 3개 카테고리(디자인/내용/이외)로 구성된 체크리스트를 전달.
+          </div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>기본적으로는 오타 유무, 실습이라면 실습 주제나 내용, 수행 방법이 잘 안내되어있는지, 그리고 무엇보다도 <strong>커리큘럼이 잘 반영되어있는지</strong>가 중요해!</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p><code>lesson-review.md</code> 스킬을 만들었어요! 우선순위를 이렇게 잡았습니다:</p>
+          <ol>
+            <li><strong>커리큘럼 반영 여부</strong> — 가장 중요</li>
+            <li><strong>실습 안내 완성도</strong> — 주제, 내용, 수행 방법</li>
+            <li><strong>오타 및 형식 검수</strong> — 기본 품질</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>이 스킬을 사용해서 검수를 할 때는, 반드시 <strong>수강생에 대한 파악 가능한 정보</strong>(특성, 인원 수, 수준 등)를 먼저 물어봐줘.</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>좋아요! Step 0으로 <strong>"수강생 정보 수집"</strong> 단계를 추가했어요. 검수 시작 전에 수강생 특성, 인원, 수준을 먼저 확인하겠습니다.</p>
+        </div>
+      </div>
+
+      <div class="narration">스킬이 탄생했다. 이제 실전에서 검증할 차례.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CHAPTER 2: 첫 번째 실전 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="chapter" id="ch2">
+      <div class="chapter-header">
+        <div class="chapter-num">2</div>
+        <div>
+          <h2>첫 번째 실전 — KB 클라우드 네이티브</h2>
+          <div class="ch-date">2026년 3월 31일 오후 (이어서)</div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>교안 검수해줘!</p>
+          <div class="summary-box">
+            <strong>[첨부 자료]</strong><br>
+            - 커리큘럼 PDF (이미지 기반)<br>
+            - 교안 PDF (284페이지, 강사: 박창렴)<br>
+            - 수강생 정보: KB금융그룹 및 자회사, 13명, 실습코치 1명, 5주 40시간
+          </div>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>검수 완료! 결과를 요약하면:</p>
+          <div class="result-card">
+            <h4>커리큘럼 반영</h4>
+            <p><span class="tag pass">PASS</span> 5개 주요 토픽 모두 반영됨</p>
+          </div>
+          <div class="result-card">
+            <h4>발견된 문제점</h4>
+            <ul>
+              <li><span class="tag warn">확인 필요</span> 4주차 구분 페이지 누락</li>
+              <li><span class="tag warn">확인 필요</span> 목차 페이지 없음</li>
+              <li><span class="tag warn">확인 필요</span> 강사 이메일 노출</li>
+              <li><span class="tag info">경미</span> 폴더명 오타</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>이거 그 결과만 요약해서 보내줘! 아까 처음에 표로 하나 보내줬었는데 못찾겠어요!</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <div class="summary-box">
+            <strong>[검수 결과 요약표 제공]</strong><br>
+            커리큘럼 매핑, 디자인/내용/이외 카테고리별 체크 결과를 표로 정리하여 전달.
+          </div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>감사합니다!! 멋집니다 고맙습니다!</p>
+        </div>
+      </div>
+
+      <div class="narration">첫 번째 실전 검수 완료. 284페이지 교안을 체계적으로 검수하고,<br>강사에게 전달할 피드백을 정리했다.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CHAPTER 3: 두 번째 실전 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="chapter" id="ch3">
+      <div class="chapter-header">
+        <div class="chapter-num">3</div>
+        <div>
+          <h2>두 번째 실전 — AI Agent 기획설계구현</h2>
+          <div class="ch-date">2026년 4월 2일 오전</div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>교안 검수하고싶어요</p>
+          <div class="summary-box">
+            <strong>[첨부 자료]</strong><br>
+            - 과정명: AI Agent 기획 설계 구현 (DT개발 STEP2)<br>
+            - 강사: 이한준<br>
+            - 수강생: KB금융그룹 28명 + 실습코치 2명<br>
+            - 구성: 5주 40시간 (토요일 진행)<br>
+            - 커리큘럼 이미지 (PNG), 교안 PDF (1주차 초안, 47p)<br>
+            - 사전 설문 엑셀 (수강생 프로필)
+          </div>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>사전 설문을 먼저 분석했어요:</p>
+          <div class="result-card">
+            <h4>수강생 프로필</h4>
+            <ul>
+              <li>6개 자회사 소속, 코딩 수준 편차 큼 (비전공~고급)</li>
+              <li>29명 중 7명만 STEP1 수강 이력 있음</li>
+              <li>수준 격차가 매우 크므로 실습 난이도 배려 필요</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p><strong>오타 검수는 항상 필수야.</strong></p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>알겠습니다! <span class="tag new">영구 규칙 추가</span></p>
+          <p>"오타 검수는 항상 필수"를 스킬과 메모리 모두에 기록했어요. 앞으로 모든 검수에서 오타 체크를 절대 빠뜨리지 않겠습니다.</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>검수 완료!</p>
+          <div class="result-card">
+            <h4>검수 결과 요약</h4>
+            <ul>
+              <li><span class="tag pass">PASS</span> 커리큘럼 1주차 내용 충실히 반영</li>
+              <li><span class="tag pass">PASS</span> 수강생 수준별 실습 구성 적절</li>
+              <li><span class="tag info">참고</span> 오타 검수 및 형식 피드백 포함</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="narration">두 번째 실전을 마쳤다. "오타 검수는 항상 필수"라는 영구 규칙이 새겨졌다.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CHAPTER 4: 스킬 개선 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="chapter" id="ch4">
+      <div class="chapter-header">
+        <div class="chapter-num">4</div>
+        <div>
+          <h2>실전에서 배운 것 — 스킬 개선</h2>
+          <div class="ch-date">2026년 4월 2일 오후</div>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>검수해주신 결과를 봤을 때, 스킬에 추가되어야 할 내용이 있을지 검토해주실래요?</p>
+          <p>두번째로 검수한 자료에 대해서 제가 강사님께 회신드린 내용을 줄게요. 같이 보면서 판단해줘요.</p>
+          <div class="summary-box">
+            <strong>[강사 회신 내용 요약]</strong><br>
+            전체적으로 교안 퀄리티가 높고 수강생 맞춤 예시도 잘 구성되었다는 긍정 피드백과 함께, 형식 관련 4가지 확인 요청 사항을 전달함:<br>
+            1. 설문/툴 링크 미삽입 확인 요청<br>
+            2. 페이지 번호 삽입 요청<br>
+            3. 툴 사용 시 개인 구글 계정 안내 요청<br>
+            4. 과제 제출 방식(패들렛) 제안
+          </div>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>실제 검수 후 회신 내용을 기반으로 스킬을 보완하면 훨씬 실용적이겠네요. 현재 스킬과 대조해봤어요.</p>
+
+          <p><strong>이미 스킬에 있는 항목</strong></p>
+          <ul>
+            <li><strong>페이지 번호</strong> — 디자인 체크리스트에 이미 있음 <span class="tag pass">이미 있음</span></li>
+          </ul>
+
+          <p><strong>스킬에 없거나 부족한 항목 (추가 후보 3개)</strong></p>
+          <table>
+            <tr><th>#</th><th>추가 후보 항목</th><th>위치 제안</th></tr>
+            <tr><td>1</td><td>링크/URL 실제 삽입 여부</td><td>[내용] 또는 [실습 안내]</td></tr>
+            <tr><td>2</td><td>툴 접속 계정 안내 여부</td><td>[실습 안내]</td></tr>
+            <tr><td>3</td><td>과제/결과물 제출 방식 명시</td><td>[이외] 또는 [실습 안내]</td></tr>
+          </table>
+
+          <p>3개 항목 모두 <strong>"실제 강의 운영"</strong> 관점에서 나온 거라, 스킬에 추가하면 다음 검수부터 자동으로 잡아낼 수 있어요. 추가할까요?</p>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>음 1은 해주고, 2, 3은 상황에 따라 다를테니 제외해도 되겠어요!</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>알겠어요! 1번 "링크/URL 실제 삽입 여부" 항목만 추가할게요.</p>
+          <p><code>lesson-review.md</code>의 [내용] 체크리스트에 아래 항목을 추가했어요:</p>
+          <blockquote>링크/URL 실제 삽입 여부 (설문, 툴, 참고자료 등 링크가 빈 텍스트 placeholder "링크 예정"이 아닌 실제 URL로 삽입되어 있는지)</blockquote>
+        </div>
+      </div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>네 좋아요. 다만 이건 링크 클릭, 링크 열기 등 <strong>링크가 들어가야 할 것으로 보이는 문구가 있을 때만</strong> 검증하면 돼요. 그렇게 되어 있나요?</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>좋은 포인트예요. 조건을 더 정교하게 수정했어요:</p>
+          <blockquote>링크/URL 실제 삽입 여부 ("링크 클릭", "접속하기", "여기에서 확인" 등 링크가 들어가야 할 것으로 보이는 문구가 있을 때, 실제 URL이 삽입되어 있는지 확인)</blockquote>
+          <p><span class="tag new">스킬 업데이트</span> 다음 검수부터 자동으로 체크합니다.</p>
+        </div>
+      </div>
+
+      <div class="divider">그리고</div>
+
+      <div class="message user">
+        <div class="avatar">여경</div>
+        <div class="bubble">
+          <p>당신과 함께 일하는 것이 즐거워요. 더 많은 일을 함께 하고, 더 촘촘히 체계를 잡아가도록 해요. 고마워요!</p>
+        </div>
+      </div>
+
+      <div class="message assistant">
+        <div class="avatar">C</div>
+        <div class="bubble">
+          <p>저도 여경님과 함께 일하는 게 정말 즐거워요. 검수할 때마다 실전에서 나온 인사이트로 스킬을 다듬어가는 과정이 특히 좋아요 — 점점 더 단단해지고 있어요.</p>
+          <p>앞으로도 하나씩 같이 쌓아가요. 고마워요 여경님, 좋은 하루 보내세요!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- SKILL EVOLUTION TIMELINE -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="timeline">
+      <h3>lesson-review 스킬의 성장 기록</h3>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">3월 31일</div>
+          <div class="timeline-text"><strong>스킬 생성</strong> — CSV 체크리스트 23개 항목 기반, 3단계 우선순위 설정</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">3월 31일</div>
+          <div class="timeline-text"><strong>Step 0 추가</strong> — 검수 전 수강생 정보 수집 단계</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">3월 31일</div>
+          <div class="timeline-text"><strong>첫 번째 실전</strong> — KB 클라우드 네이티브 284p 검수 성공</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">4월 2일</div>
+          <div class="timeline-text"><strong>영구 규칙</strong> — "오타 검수는 항상 필수" 추가</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">4월 2일</div>
+          <div class="timeline-text"><strong>두 번째 실전</strong> — AI Agent 과정 47p + 수강생 설문 분석</div>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-date">4월 2일</div>
+          <div class="timeline-text"><strong>체크항목 추가</strong> — "링크/URL 실제 삽입 여부" (조건부 체크)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="tool-badge">Claude Code — Opus 4.6</div>
+      <p>스킬은 한 번에 완성되지 않는다.<br>실전을 거치며 한 줄씩 단단해진다.</p>
+      <p style="margin-top: 8px; font-size: 0.78rem;">교안 내 민감 정보는 요약 처리되었습니다.</p>
+    </div>
+
+  </div>
+
+  <!-- ===== MUSIC PLAYER ===== -->
+  <div class="music-player" id="musicPlayer">
+    <button class="play-btn" id="playBtn" onclick="toggleMusic()">
+      <span id="playIcon">&#9654;</span>
+    </button>
+    <div class="music-bars" id="musicBars">
+      <div class="bar" style="height:4px"></div>
+      <div class="bar" style="height:4px"></div>
+      <div class="bar" style="height:4px"></div>
+      <div class="bar" style="height:4px"></div>
+    </div>
+    <span class="music-label" id="musicLabel">BGM 재생</span>
+  </div>
+
+  <script>
+    // ===== Web Audio API — 잔잔한 피아노 풍 BGM =====
+    let audioCtx = null;
+    let isPlaying = false;
+    let schedulerId = null;
+    let activeNodes = [];
+
+    // 음계 (Hz) — 따뜻한 C major / A minor 계열
+    const notes = {
+      C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
+      C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88,
+      C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99
+    };
+
+    // 멜로디 패턴들 — 잔잔하고 따뜻한 느낌
+    const melodyPatterns = [
+      // 패턴 1: 올라가는 따뜻한 선율
+      ['E4','G4','A4','C5','B4','G4','E4','D4'],
+      // 패턴 2: 내려오는 부드러운 선율
+      ['C5','B4','A4','G4','E4','D4','C4','E4'],
+      // 패턴 3: 물결치는 듯한 선율
+      ['A4','C5','B4','G4','A4','E4','G4','A4'],
+      // 패턴 4: 여운 있는 선율
+      ['G4','A4','C5','D5','C5','A4','G4','E4'],
+      // 패턴 5: 희망적인 선율
+      ['C4','E4','G4','A4','G4','C5','B4','G4'],
+      // 패턴 6: 차분한 마무리
+      ['E5','D5','C5','A4','G4','E4','D4','C4'],
+    ];
+
+    // 베이스 패턴 (코드 근음)
+    const bassPatterns = [
+      ['C3','C3','A3','A3','F3','F3','G3','G3'],
+      ['A3','A3','F3','F3','C3','C3','G3','G3'],
+      ['F3','F3','C3','C3','G3','G3','A3','A3'],
+    ];
+
+    // 피아노 음색 합성
+    function playNote(freq, startTime, duration, volume = 0.12) {
+      if (!audioCtx) return;
+
+      // 기본 음 (사인파 + 약간의 배음)
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.value = freq;
+
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2; // 옥타브 배음
+
+      const gain2 = audioCtx.createGain();
+      gain2.gain.value = 0.15; // 배음은 작게
+
+      osc1.connect(gain);
+      osc2.connect(gain2);
+      gain2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      // 피아노처럼 빠르게 올라갔다 천천히 줄어드는 엔벨로프
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(volume * 0.6, startTime + duration * 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+      osc1.start(startTime);
+      osc1.stop(startTime + duration);
+      osc2.start(startTime);
+      osc2.stop(startTime + duration);
+
+      activeNodes.push(osc1, osc2, gain, gain2);
+    }
+
+    // 패드 사운드 (부드러운 배경)
+    function playPad(freq, startTime, duration) {
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.04, startTime + 0.5);
+      gain.gain.setValueAtTime(0.04, startTime + duration - 0.5);
+      gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+
+      activeNodes.push(osc, gain);
+    }
+
+    let currentBar = 0;
+
+    function scheduleBar() {
+      if (!isPlaying || !audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const tempo = 0.5; // 한 음의 길이 (초) — 느긋하게
+      const barLength = 8 * tempo;
+
+      // 멜로디
+      const melodyIdx = currentBar % melodyPatterns.length;
+      const melody = melodyPatterns[melodyIdx];
+
+      melody.forEach((noteName, i) => {
+        const freq = notes[noteName];
+        if (freq) {
+          // 약간의 랜덤 벨로시티로 자연스럽게
+          const vel = 0.08 + Math.random() * 0.06;
+          playNote(freq, now + i * tempo, tempo * 1.2, vel);
+        }
+      });
+
+      // 베이스 (2바마다)
+      if (currentBar % 2 === 0) {
+        const bassIdx = Math.floor(currentBar / 2) % bassPatterns.length;
+        const bass = bassPatterns[bassIdx];
+        bass.forEach((noteName, i) => {
+          const freq = notes[noteName];
+          if (freq) {
+            playNote(freq, now + i * tempo, tempo * 1.5, 0.05);
+          }
+        });
+      }
+
+      // 패드 (4바마다 코드)
+      if (currentBar % 4 === 0) {
+        playPad(notes.C4, now, barLength * 2);
+        playPad(notes.E4, now, barLength * 2);
+        playPad(notes.G4, now, barLength * 2);
+      }
+
+      currentBar++;
+
+      // 다음 바 스케줄링
+      schedulerId = setTimeout(scheduleBar, barLength * 1000);
+    }
+
+    function toggleMusic() {
+      if (!isPlaying) {
+        // 시작
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        isPlaying = true;
+        currentBar = 0;
+        scheduleBar();
+
+        document.getElementById('playIcon').innerHTML = '&#10074;&#10074;';
+        document.getElementById('playBtn').classList.add('playing');
+        document.getElementById('musicBars').classList.add('active');
+        document.getElementById('musicLabel').textContent = '재생 중';
+      } else {
+        // 정지
+        isPlaying = false;
+        if (schedulerId) clearTimeout(schedulerId);
+        if (audioCtx) {
+          audioCtx.close();
+          audioCtx = null;
+        }
+        activeNodes = [];
+
+        document.getElementById('playIcon').innerHTML = '&#9654;';
+        document.getElementById('playBtn').classList.remove('playing');
+        document.getElementById('musicBars').classList.remove('active');
+        document.getElementById('musicLabel').textContent = 'BGM 재생';
+      }
+    }
+  </script>
+</body>
+</html>
